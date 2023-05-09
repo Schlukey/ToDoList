@@ -1,18 +1,16 @@
-//jshint esversion:6
-
 const express = require("express");
+const dotenv = require('dotenv').config();
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const _ = require("lodash");
 
 const app = express();
-
 app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb+srv://Luke:H3brews!@atlascluster.ef9alfa.mongodb.net/", {
+mongoose.connect(`mongodb+srv://${process.env.USERNAME}${process.env.PASSWORD}@atlascluster.ef9alfa.mongodb.net/`, {
   useNewUrlParser: true,
 });
 
@@ -57,7 +55,7 @@ let day = daysOfWeek[today];
 
 app.get("/", async function (_req, res) {
   //finding the items in the array pushed into the model
-  Item.find({}).then((foundItems) => {
+  await Item.find({}).then((foundItems) => {
     //if the array is 0 then the start item must be added else no changes made
     if (foundItems.length <= 0) {
       //inserting items from the array into the model
@@ -71,19 +69,19 @@ app.get("/", async function (_req, res) {
   });
 });
 
-app.post("/", function (req, res) {
+app.post("/", async function(req, res) {
   const itemName = req.body.newItem;
   const listSearch = req.body.list;
   const item = new Item({
     name: itemName,
   });
   if (listSearch == day) {
-    item.save();
+    await item.save();
     //redirect to the home route
     res.redirect("/");
   } else {
     //find the list they working with
-    List.findOne({ name: listSearch })
+    await List.findOne({ name: listSearch })
       .then(function (foundList) {
         //push the new items to the list
         foundList.items.push(item);
@@ -112,7 +110,7 @@ app.post('/delete', async (req, res) => {
       res.redirect('/');
   } else {
     // Deleting an item from a custom list
-    List.findOneAndUpdate(
+    await List.findOneAndUpdate(
       { name: listName },
       { $pull: { items: { _id: completed } } },
       { useFindAndModify: false } // Add this option to avoid deprecation warning
@@ -147,7 +145,7 @@ app.get("/:listID", async (req, res) => {
   }
 });
 
-app.get("/about", function (_req, res) {
+app.get("/about", function (req, res) {
   res.render("about");
 });
 
