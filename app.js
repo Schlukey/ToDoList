@@ -135,7 +135,7 @@ app.get("/:listID", async (req, res) => {
       name: listName,
       items: [],
     });
-    await newList.save();
+    await newList.save().catch((err) => {console.log(err)});
     console.log("New list created");
     res.redirect("/" + listName);
   } else {
